@@ -1,5 +1,11 @@
 {
   "dependencies": {
+    "at.pimaker.ltcgi": {
+      "version": "file:at.pimaker.ltcgi",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {}
+    },
     "com.unity.ai.navigation": {
       "version": "1.1.5",
       "depth": 0,
@@ -73,9 +79,9 @@
       "depth": 0,
       "source": "registry",
       "dependencies": {
+        "com.unity.modules.audio": "1.0.0",
         "com.unity.modules.director": "1.0.0",
         "com.unity.modules.animation": "1.0.0",
-        "com.unity.modules.audio": "1.0.0",
         "com.unity.modules.particlesystem": "1.0.0"
       },
       "url": "https://packages.unity.com"
@@ -97,8 +103,22 @@
         "com.unity.nuget.newtonsoft-json": "2.0.2"
       }
     },
-    "com.vrchat.demo-template": {
-      "version": "file:com.vrchat.demo-template",
+    "com.vrchat.core.vpm-resolver": {
+      "version": "file:com.vrchat.core.vpm-resolver",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {
+        "com.unity.nuget.newtonsoft-json": "3.0.2"
+      }
+    },
+    "idv.jlchntoz.vrchybridgi": {
+      "version": "file:idv.jlchntoz.vrchybridgi",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {}
+    },
+    "red.sim.lightvolumes": {
+      "version": "file:red.sim.lightvolumes",
       "depth": 0,
       "source": "embedded",
       "dependencies": {}

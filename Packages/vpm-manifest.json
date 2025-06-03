@@ -1,1 +1,20 @@
-{"dependencies": {}, "locked": {}}
+{
+  "dependencies": {
+    "at.pimaker.ltcgi": {
+      "version": "1.6.3"
+    },
+    "red.sim.lightvolumes": {
+      "version": "1.0.0"
+    }
+  },
+  "locked": {
+    "at.pimaker.ltcgi": {
+      "version": "1.6.3",
+      "dependencies": {}
+    },
+    "red.sim.lightvolumes": {
+      "version": "1.0.0",
+      "dependencies": {}
+    }
+  }
+}

@@ -1,5 +1,5 @@
 {
-    "name": "VRChatPackageTemplate.Editor",
+    "name": "HybridGI.Editor",
     "references": [],
     "includePlatforms": [
         "Editor"
