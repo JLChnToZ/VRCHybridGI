@@ -1,6 +1,6 @@
 # VRC Hybrid GI
 
-This is a lighting model (not a complete shader) designed to use in VRChat, where it supports many community de-facto standard lighting systems. Currently, it bundles following lighting systems:
+This is a [custom lighting model](https://docs.unity3d.com/2022.3/Documentation/Manual/SL-SurfaceShaderLighting.html) (not a complete shader) designed to use in VRChat, where it supports many community de-facto standard lighting systems. Currently, it bundles following:
 
 - [LTCGI](https://ltcgi.dev/)
 - [VRC Light Volumes](https://github.com/REDSIM/VRCLightVolumes)
@@ -39,7 +39,8 @@ Shader "Custom/HybridSurfaceSample" {
         LOD 200
 
         CGPROGRAM
-        // use "StandardHybrid" instead of "Standard" to enable hybrid lighting model
+        // Use "StandardHybrid" instead of "Standard" to enable hybrid lighting model.
+        // If you were using "StandardSpecular", you can replace it to "StandardSpecularHybrid".
         #pragma surface surf StandardHybrid fullforwardshadows
 
         // Use shader model 3.0 target, to get nicer looking lighting
@@ -57,6 +58,10 @@ Shader "Custom/HybridSurfaceSample" {
 Besides of this lighting model, it also contain following shaders for use:
 - `Particles/Standard Hybrid Surface`: A surface particle shader likes the standard one, but with Hybrid GI.
 - `Particles/GI Lit`: An particle shader likes the standard unlit one, but lit with VRC Light Volumes and light probes support.
+
+## Why?
+
+This is a great question. There are plenty of feature rich shaders are for end users, already supporting these community made essentials, LilToon, Poiyomi, Filamented, Mochie, you name it. This package's goal isn't "reinventing the wheel" to compete with them, instead it is made for advanced shader engineers, who wants to DIY some simple functional shaders for use in worlds and/or avatars, but find tedious and annoyed to make it compatible with these essentials.
 
 ## License
 

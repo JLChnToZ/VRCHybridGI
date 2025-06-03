@@ -20,7 +20,8 @@ Shader "Custom/HybridSurfaceSample" {
         LOD 200
 
         CGPROGRAM
-        // use "StandardHybrid" instead of "Standard" to enable hybrid lighting model
+        // Use "StandardHybrid" instead of "Standard" to enable hybrid lighting model.
+        // If you were using "StandardSpecular", you can replace it to "StandardSpecularHybrid".
         #pragma surface surf StandardHybrid fullforwardshadows
 
         // Use shader model 3.0 target, to get nicer looking lighting
