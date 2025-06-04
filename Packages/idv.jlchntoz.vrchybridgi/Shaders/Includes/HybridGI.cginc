@@ -1,23 +1,6 @@
 #ifndef HYBRID_GI_INCLUDED
 #define HYBRID_GI_INCLUDED
 
-/**
-    Add following to your shader properties to toggle HybridGI features:
-    [Toggle(_LTCGI)] _LTCGI ("Use LTCGI", Int) = 0
-    [Toggle(_VRCLV)] _VRCLV ("Use VRC Light Volumes", Int) = 0
-    [KeywordEnum(None, SH, MonoSH)] _Bakery ("Directional Lightmap Mode", Int) = 0
-    [Toggle(_BAKERY_SHNONLINEAR)] _SHNonLinear ("Non-Linear SH", Int) = 0
-**/
-
-#ifndef UNITY_PASS_DEFERRED
-#pragma shader_feature_local __ _LTCGI
-#pragma shader_feature_local __ _VRCLV
-#ifdef LIGHTMAP_ON
-#pragma shader_feature_local __ _BAKERY_SH _BAKERY_MONOSH
-#pragma shader_feature_local __ _BAKERY_SHNONLINEAR
-#endif
-#endif
-
 #include "UnityCG.cginc"
 #include "UnityImageBasedLighting.cginc"
 
@@ -34,9 +17,9 @@
 #endif
 
 #ifdef _BAKERY_SH
-sampler2D _RNM0;
-sampler2D _RNM1;
-sampler2D _RNM2;
+UNITY_DECLARE_TEX2D(_RNM0);
+UNITY_DECLARE_TEX2D(_RNM1);
+UNITY_DECLARE_TEX2D(_RNM2);
 #endif
 
 // Adopted from Filamented
@@ -45,8 +28,9 @@ float shEvaluateDiffuseL1Geomerics(float L0, float3 L1, float3 n) {
     float3 R1 = 0.5 * L1;
     float lenR1 = length(R1);
     float q = saturate(mad(dot(R1 / lenR1, n), 0.5, 0.5));
-    float p = mad(lenR1 / R0, 2.0, 1.0);
-    float a = (1.0 - lenR1 / R0) / (1.0 + lenR1 / R0);
+    float lenR1divR0 = lenR1 / R0;
+    float p = mad(lenR1divR0, 2.0, 1.0);
+    float a = (1.0 - lenR1divR0) / (1.0 + lenR1divR0);
     return R0 * (a + (1.0 - a) * (p + 1.0) * pow(q, p));
 }
 
@@ -84,18 +68,17 @@ inline UnityGI HybridGI(UnityGIInput data, half occlusion, half3 normalWorld) {
 
         #if defined(_BAKERY_SH) || defined(_BAKERY_MONOSH)
             #if defined(_BAKERY_SH)
-                const float3 nL1x = UNITY_SAMPLE_TEX2D(_RNM0, data.lightmapUV.xy) * 2 - 1;
-                const float3 nL1y = UNITY_SAMPLE_TEX2D(_RNM1, data.lightmapUV.xy) * 2 - 1;
-                const float3 nL1z = UNITY_SAMPLE_TEX2D(_RNM2, data.lightmapUV.xy) * 2 - 1;
-                const float3 L1x = nL1x * bakedColor * 2;
-                const float3 L1y = nL1y * bakedColor * 2;
-                const float3 L1z = nL1z * bakedColor * 2;
+                const float3 nL1x = mad(UNITY_SAMPLE_TEX2D(_RNM0, data.lightmapUV.xy), 4, -2);
+                const float3 nL1y = mad(UNITY_SAMPLE_TEX2D(_RNM1, data.lightmapUV.xy), 4, -2);
+                const float3 nL1z = mad(UNITY_SAMPLE_TEX2D(_RNM2, data.lightmapUV.xy), 4, -2);
+                const float3 L1x = nL1x * bakedColor;
+                const float3 L1y = nL1y * bakedColor;
+                const float3 L1z = nL1z * bakedColor;
             #elif defined(_BAKERY_MONOSH)
-                const float3 dominantDir = UNITY_SAMPLE_TEX2D_SAMPLER(unity_LightmapInd, unity_Lightmap, data.lightmapUV.xy).xyz;
-                const float3 nL1 = dominantDir * 2 - 1;
-                const float3 L1x = nL1.x * bakedColor * 2;
-                const float3 L1y = nL1.y * bakedColor * 2;
-                const float3 L1z = nL1.z * bakedColor * 2;
+                const float3 nL1 = mad(UNITY_SAMPLE_TEX2D_SAMPLER(unity_LightmapInd, unity_Lightmap, data.lightmapUV.xy).xyz, 4, -2);
+                const float3 L1x = nL1.x * bakedColor;
+                const float3 L1y = nL1.y * bakedColor;
+                const float3 L1z = nL1.z * bakedColor;
             #endif
             float3 sh = bakedColor + normalWorld.x * L1x + normalWorld.y * L1y + normalWorld.z * L1z;
             #if _BAKERY_SHNONLINEAR
@@ -123,10 +106,9 @@ inline UnityGI HybridGI(UnityGIInput data, half occlusion, half3 normalWorld) {
 
         #ifdef DIRLIGHTMAP_COMBINED
             half4 realtimeDirTex = UNITY_SAMPLE_TEX2D_SAMPLER(unity_DynamicDirectionality, unity_DynamicLightmap, data.lightmapUV.zw);
-            gi.indirect.diffuse += DecodeDirectionalLightmap(realtimeColor, realtimeDirTex, normalWorld);
-        #else
-            gi.indirect.diffuse += realtimeColor;
+            realtimeColor = DecodeDirectionalLightmap(realtimeColor, realtimeDirTex, normalWorld);
         #endif
+        gi.indirect.diffuse += realtimeColor;
     #endif
 
     gi.indirect.diffuse *= occlusion;
@@ -137,7 +119,8 @@ inline UnityGI HybridGI(UnityGIInput data, half occlusion, half3 normalWorld, Un
     UnityGI gi = HybridGI(data, occlusion, normalWorld);
     gi.indirect.specular = UnityGI_IndirectSpecular(data, occlusion, gloss);
     #ifdef _LTCGI
-        LTCGI_Contribution(gi.indirect, data.worldPos, normalWorld, normalize(_WorldSpaceCameraPos - data.worldPos), gloss.roughness, data.lightmapUV.xy);
+        float3 viewDir = normalize(_WorldSpaceCameraPos - data.worldPos);
+        LTCGI_Contribution(gi.indirect, data.worldPos, normalWorld, viewDir, gloss.roughness, data.lightmapUV.xy);
     #endif
     return gi;
 }

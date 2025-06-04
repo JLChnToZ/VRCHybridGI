@@ -1,6 +1,24 @@
 #ifndef STANDARD_HYBRID_INCLUDED
 #define STANDARD_HYBRID_INCLUDED
 
+/**
+    Add following to your shader properties to toggle HybridGI features:
+    [Toggle(_LTCGI)] _LTCGI ("Use LTCGI", Int) = 0
+    [Toggle(_VRCLV)] _VRCLV ("Use VRC Light Volumes", Int) = 0
+    [KeywordEnum(None, SH, MonoSH)] _Bakery ("Directional Lightmap Mode", Int) = 0
+    [Toggle(_BAKERY_SHNONLINEAR)] _SHNonLinear ("Non-Linear SH", Int) = 0
+**/
+
+#ifndef SKIP_HYBRID_GI_SHADER_FEATURES
+    #pragma shader_feature_local __ _LTCGI
+    #pragma shader_feature_local __ _VRCLV
+
+    #ifdef LIGHTMAP_ON
+        #pragma shader_feature_local __ _BAKERY_SH _BAKERY_MONOSH
+        #pragma shader_feature_local __ _BAKERY_SHNONLINEAR
+    #endif
+#endif
+
 #include "./HybridGI.cginc"
 #include "UnityPBSLighting.cginc"
 
@@ -17,11 +35,12 @@ inline half4 LightingStandardHybrid_Deferred(
     return LightingStandard_Deferred(s, viewDir, gi, b0, b1, b2);
 }
 
-void LightingStandardHybrid_GI(SurfaceOutputStandard s, UnityGIInput data, inout UnityGI gi) {
+inline void LightingStandardHybrid_GI(SurfaceOutputStandard s, UnityGIInput data, inout UnityGI gi) {
     #if defined(UNITY_PASS_DEFERRED) && UNITY_ENABLE_REFLECTION_BUFFERS
         gi = HybridGI(data, s.Occlusion, s.Normal);
     #else
-        Unity_GlossyEnvironmentData g = UnityGlossyEnvironmentSetup(s.Smoothness, data.worldViewDir, s.Normal, lerp(unity_ColorSpaceDielectricSpec.rgb, s.Albedo, s.Metallic));
+        half3 specular = lerp(unity_ColorSpaceDielectricSpec.rgb, s.Albedo, s.Metallic);
+        Unity_GlossyEnvironmentData g = UnityGlossyEnvironmentSetup(s.Smoothness, data.worldViewDir, s.Normal, specular);
         gi = HybridGI(data, s.Occlusion, s.Normal, g);
     #endif
 }
@@ -41,7 +60,7 @@ inline half4 LightingStandardSpecularHybrid_Deferred(
     return LightingStandardSpecular_Deferred(s, viewDir, gi, b0, b1, b2);
 }
 
-void LightingStandardSpecularHybrid_GI(SurfaceOutputStandardSpecular s, UnityGIInput data, inout UnityGI gi) {
+inline void LightingStandardSpecularHybrid_GI(SurfaceOutputStandardSpecular s, UnityGIInput data, inout UnityGI gi) {
     #if defined(UNITY_PASS_DEFERRED) && UNITY_ENABLE_REFLECTION_BUFFERS
         gi = HybridGI(data, s.Occlusion, s.Normal);
     #else
