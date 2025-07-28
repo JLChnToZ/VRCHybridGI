@@ -9,7 +9,7 @@ Shader "Custom/HybridSurfaceSample" {
         // Add following properties to make these features toggleable
         [Toggle(_LTCGI)] _LTCGI ("Use LTCGI", Int) = 0
         [Toggle(_VRCLV)] _VRCLV ("Use VRC Light Volumes", Int) = 0
-        [KeywordEnum(None, SH, MonoSH)] _Bakery ("Directional Lightmap Mode", Int) = 0
+        [KeywordEnum(None, SH, RNM, MonoSH)] _Bakery ("Directional Lightmap Mode", Int) = 0
         [Toggle(_BAKERY_SHNONLINEAR)] _SHNonLinear ("Non-Linear SH", Int) = 0
     }
     SubShader {

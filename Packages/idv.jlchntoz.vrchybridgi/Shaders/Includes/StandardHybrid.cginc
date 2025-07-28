@@ -5,22 +5,24 @@
     Add following to your shader properties to toggle HybridGI features:
     [Toggle(_LTCGI)] _LTCGI ("Use LTCGI", Int) = 0
     [Toggle(_VRCLV)] _VRCLV ("Use VRC Light Volumes", Int) = 0
-    [KeywordEnum(None, SH, MonoSH)] _Bakery ("Directional Lightmap Mode", Int) = 0
+    [KeywordEnum(None, SH, RNM, MonoSH)] _Bakery ("Directional Lightmap Mode", Int) = 0
     [Toggle(_BAKERY_SHNONLINEAR)] _SHNonLinear ("Non-Linear SH", Int) = 0
 **/
 
 #ifndef SKIP_HYBRID_GI_SHADER_FEATURES
-    #pragma shader_feature_local __ _LTCGI
-    #pragma shader_feature_local __ _VRCLV
+    #pragma shader_feature_local_fragment __ _LTCGI
+    #pragma shader_feature_local_fragment __ _VRCLV
 
     #ifdef LIGHTMAP_ON
-        #pragma shader_feature_local __ _BAKERY_SH _BAKERY_MONOSH
-        #pragma shader_feature_local __ _BAKERY_SHNONLINEAR
+        #pragma shader_feature_local_fragment __ _BAKERY_SH _BAKERY_MONOSH _BAKERY_RNM
+        #pragma shader_feature_local_fragment __ _BAKERY_SHNONLINEAR
     #endif
 #endif
 
 #include "./HybridGI.cginc"
 #include "UnityPBSLighting.cginc"
+
+#define SurfaceOutputStandardHybrid SurfaceOutputStandard
 
 inline half4 LightingStandardHybrid(SurfaceOutputStandard s, half3 viewDir, UnityGI gi) {
     // Just inherit the original LightingStandard function
@@ -45,7 +47,7 @@ inline void LightingStandardHybrid_GI(SurfaceOutputStandard s, UnityGIInput data
     #endif
 }
 
-#define SurfaceOutputStandardHybrid SurfaceOutputStandard
+#define SurfaceOutputStandardSpecularHybrid SurfaceOutputStandardSpecular
 
 inline half4 LightingStandardSpecularHybrid(SurfaceOutputStandardSpecular s, half3 viewDir, UnityGI gi) {
     // Just inherit the original LightingStandardSpecular function
@@ -68,7 +70,5 @@ inline void LightingStandardSpecularHybrid_GI(SurfaceOutputStandardSpecular s, U
         gi = HybridGI(data, s.Occlusion, s.Normal, g);
     #endif
 }
-
-#define SurfaceOutputStandardSpecularHybrid SurfaceOutputStandardSpecular
 
 #endif
