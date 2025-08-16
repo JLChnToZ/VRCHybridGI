@@ -147,8 +147,12 @@ Shader "Particles/GI Lit" {
                     albedo *= _Color;
 
                     #ifdef _VRCLV
+                    #if VRCLV_VERSION == 2
+                        float3 L0 = LightVolumeSH_L0(IN.worldPos);
+                    #elif defined(_VRCLV)
                         float3 L0, L1r, L1g, L1b;
                         LightVolumeSH(IN.worldPos, L0, L1r, L1g, L1b);
+                    #endif
                         albedo.rgb *= L0;
                     #else
                         albedo.rgb *= float3(unity_SHAr.w, unity_SHAg.w, unity_SHAb.w);
